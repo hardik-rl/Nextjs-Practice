@@ -17,16 +17,16 @@ const apiCall = async (endpoint, method = 'GET', data = null, headers = {}) => {
   
       const response = await fetch(url, options);
   
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      // if (!response.ok) {
+      //   throw new Error(`HTTP error! status: ${response.status}`);
+      // }
   
       const responseData = await response.json();
       console.log(responseData, "responseData");
       
       return responseData;
     } catch (error) {
-      console.error('API call failed:', error.message);
+      console.log('API call failed:', error.message);
       throw error;
     }
   };

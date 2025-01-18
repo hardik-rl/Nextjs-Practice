@@ -1,61 +1,99 @@
-"use client"
-
-import * as React from 'react';
-import Paper from '@mui/material/Paper';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
-import { Box, TextField, Typography } from '@mui/material';
-import apiCall from '@/api/ApiCalling';
+"use client";
+import * as React from "react";
+import Paper from "@mui/material/Paper";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TablePagination from "@mui/material/TablePagination";
+import TableRow from "@mui/material/TableRow";
+import { Box, TextField, Typography } from "@mui/material";
+import apiCall from "@/api/ApiCalling";
 
 export default function About() {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
-  const [data, setData] = React.useState([]);
+  const [data, setData] = React.useState({ products: [], total: 0 });
+  const [searchQuery, setSearchQuery] = React.useState("");
 
-  const handleChangePage = (event, newPage) => {    
+  const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
 
   const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(1+event.target.value);
+    setRowsPerPage(+event.target.value);
+    setPage(0);
+  };
+
+  const handleSearch = (event) => {
+    setSearchQuery(event.target.value);
     setPage(0);
   };
 
   const fetchProducts = async () => {
     try {
       const offset = page * rowsPerPage;
-      const products = await apiCall(`/products?limit=${rowsPerPage}&skip=${offset}`, 'GET');
-      setData(products)
+      const query = searchQuery ? `search?q=${encodeURIComponent(searchQuery)}` : "";
+      const products = await apiCall(
+        `/products/${query}?limit=${rowsPerPage}&skip=${offset}`,
+        "GET"
+      );
+      setData(products);
     } catch (error) {
-      console.log('Error fetching products:', error);
+      console.error("Error fetching products:", error);
     }
   };
 
+
   React.useEffect(() => {
-    fetchProducts();
-  }, [page, rowsPerPage]);
+    const delayDebounceFn = setTimeout(() => {
+      fetchProducts();
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [page, rowsPerPage, searchQuery]);
 
   return (
     <>
-      <Box sx={{ display: "flex", mb: 4, alignItems: "center", justifyContent: "space-between" }}>
-        <Typography variant='h5'>Stock Market</Typography>
-        <TextField id="standard-basic" label="Standard" variant="standard" />
+      <Box
+        sx={{
+          display: "flex",
+          mb: 4,
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Typography variant="h5">Stock Market</Typography>
+        <TextField
+          id="search"
+          label="Search"
+          variant="standard"
+          value={searchQuery}
+          onChange={handleSearch}
+          placeholder="Search products"
+        />
       </Box>
-      <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+      <Paper sx={{ width: "100%", overflow: "hidden" }}>
         <TableContainer sx={{ maxHeight: 420 }}>
           <Table stickyHeader aria-label="sticky table">
             <TableHead>
               <TableRow>
-                <TableCell align="left" style={{ fontWeight: 600 }}>Title</TableCell>
-                <TableCell align="left" style={{ fontWeight: 600 }}>Description</TableCell>
-                <TableCell align="right" style={{ fontWeight: 600 }}>Price</TableCell>
-                <TableCell align="right" style={{ fontWeight: 600 }}>Rating</TableCell>
-                <TableCell align="right" style={{ fontWeight: 600 }}>Stock</TableCell>
+                <TableCell align="left" style={{ fontWeight: 600 }}>
+                  Title
+                </TableCell>
+                <TableCell align="left" style={{ fontWeight: 600 }}>
+                  Description
+                </TableCell>
+                <TableCell align="right" style={{ fontWeight: 600 }}>
+                  Price
+                </TableCell>
+                <TableCell align="right" style={{ fontWeight: 600 }}>
+                  Rating
+                </TableCell>
+                <TableCell align="right" style={{ fontWeight: 600 }}>
+                  Quantity
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -63,9 +101,9 @@ export default function About() {
                 <TableRow hover role="checkbox" tabIndex={-1} key={row.id}>
                   <TableCell>{row.title}</TableCell>
                   <TableCell>{row.description}</TableCell>
-                  <TableCell>{row.price}</TableCell>
-                  <TableCell>{row.rating}</TableCell>
-                  <TableCell>{row.stock}</TableCell>
+                  <TableCell align="right">{row.price}</TableCell>
+                  <TableCell align="right">{row.rating}</TableCell>
+                  <TableCell align="right">{row.stock}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
