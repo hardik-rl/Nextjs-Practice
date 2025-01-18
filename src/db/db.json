@@ -1,0 +1,19 @@
+{
+  "posts": [
+    {
+      "id": "1",
+      "title": "Hello World",
+      "content": "Welcome to json-server!"
+    },
+    {
+      "id": "f406",
+      "title": "apple",
+      "content": "apple mango banana"
+    },
+    {
+      "title": "banana",
+      "content": "banana0",
+      "id": "71c6"
+    }
+  ]
+}
