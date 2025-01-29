@@ -98,6 +98,7 @@ const ProductList = () => {
             <TableRow>
               <TableCell>Title</TableCell>
               <TableCell>Content</TableCell>
+              <TableCell>Image</TableCell> {/* Add a column for image */}
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -106,6 +107,15 @@ const ProductList = () => {
               <TableRow key={post.id}>
                 <TableCell>{post.title}</TableCell>
                 <TableCell>{post.content}</TableCell>
+                <TableCell>
+                  
+                  {/* Display image if it exists */}
+                  {post.fileData ? (
+                    <img src={post.fileData.fileData} alt={post.title} style={{ width: 100, height: 100, objectFit: "cover" }} />
+                  ) : (
+                    "No Image"
+                  )}
+                </TableCell>
                 <TableCell>
                   <Button
                     variant="outlined"
@@ -129,6 +139,7 @@ const ProductList = () => {
         </Table>
       </TableContainer>
 
+      {/* Add Product Modal */}
       <Dialog open={isModalOpen} onClose={handleCloseModal}>
         <DialogTitle>Add New Product</DialogTitle>
         <DialogContent>
@@ -165,6 +176,7 @@ const ProductList = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Delete Confirmation Modal */}
       <Dialog open={!!deleteId} onClose={() => setDeleteId(null)}>
         <DialogTitle>Confirm Delete</DialogTitle>
         <DialogContent>
