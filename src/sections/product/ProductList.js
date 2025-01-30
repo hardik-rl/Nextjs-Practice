@@ -68,13 +68,25 @@ const ProductList = () => {
   const deletePost = async () => {
     if (!deleteId) return;
 
-    await apiCall(`${process.env.NEXT_PUBLIC_API_BASE_URL}/posts/${deleteId}`, {
-      method: "DELETE",
-    });
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/posts/${deleteId}`,
+        {
+          method: "DELETE",
+        }
+      );
 
-    setPosts((prevPosts) => prevPosts.filter((post) => post.id !== deleteId));
-    setDeleteId(null);
+      if (!response.ok) {
+        throw new Error(`Failed to delete post: ${response.statusText}`);
+      }
+
+      setPosts((prevPosts) => prevPosts.filter((post) => post.id !== deleteId));
+      setDeleteId(null);
+    } catch (error) {
+      console.error("Error deleting post:", error);
+    }
   };
+
 
   useEffect(() => {
     fetchPosts();
@@ -108,7 +120,7 @@ const ProductList = () => {
                 <TableCell>{post.title}</TableCell>
                 <TableCell>{post.content}</TableCell>
                 <TableCell>
-                  
+
                   {/* Display image if it exists */}
                   {post.fileData ? (
                     <img src={post.fileData.fileData} alt={post.title} style={{ width: 100, height: 100, objectFit: "cover" }} />
