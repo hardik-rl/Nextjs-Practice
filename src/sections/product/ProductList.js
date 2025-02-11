@@ -30,7 +30,6 @@ const ProductList = () => {
 
   const [posts, setPosts] = useState([]);
   const [formData, setFormData] = useState({ title: "", content: "" });
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const router = useRouter();
 
@@ -41,36 +40,8 @@ const ProductList = () => {
   };
 
   const handleOpenModal = () => {
-    setFormData({ title: "", content: "" });
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setFormData({ title: "", content: "" });
-  };
-
-  const handleAddProduct = async (e) => {
-    e.preventDefault();
-
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/posts`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) throw new Error("Failed to add product");
-
-      const newProduct = await response.json();
-      setPosts((prevPosts) => [newProduct, ...prevPosts]);
-      handleCloseModal();
-    } catch (error) {
-      console.error("Error adding product:", error);
-      alert("An error occurred while adding the product.");
-    }
+    // setFormData({ title: "", content: "" });
+    router.push("/product/new");
   };
 
   const deletePost = async () => {
@@ -162,43 +133,6 @@ const ProductList = () => {
           </TableBody>
         </Table>
       </TableContainer>
-
-      {/* Add Product Modal */}
-      <Dialog open={isModalOpen} onClose={handleCloseModal}>
-        <DialogTitle>Add New Product</DialogTitle>
-        <DialogContent>
-          <form onSubmit={handleAddProduct}>
-            <TextField
-              label="Title"
-              variant="outlined"
-              fullWidth
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              required
-              margin="normal"
-            />
-            <TextField
-              label="Content"
-              variant="outlined"
-              fullWidth
-              multiline
-              rows={4}
-              value={formData.content}
-              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-              required
-              margin="normal"
-            />
-            <DialogActions>
-              <Button onClick={handleCloseModal} color="secondary">
-                Cancel
-              </Button>
-              <Button type="submit" variant="contained" color="primary">
-                Add Product
-              </Button>
-            </DialogActions>
-          </form>
-        </DialogContent>
-      </Dialog>
 
       {/* Delete Confirmation Modal */}
       <Dialog open={!!deleteId} onClose={() => setDeleteId(null)}>
