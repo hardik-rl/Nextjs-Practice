@@ -17,9 +17,17 @@ import {
   Box,
 } from "@mui/material";
 import { useRouter } from "next/navigation";
-import apiCall from "@/api/ApiCalling";
 
 const ProductList = () => {
+  const formatTime = (time) => {
+    if (!time) return "Not Set";
+    const [hours, minutes] = time.split(":");
+    const hour = parseInt(hours, 10);
+    const period = hour >= 12 ? "PM" : "AM";
+    const formattedHour = hour % 12 || 12;
+    return `${formattedHour}:${minutes}${period}`;
+  };
+
   const [posts, setPosts] = useState([]);
   const [formData, setFormData] = useState({ title: "", content: "" });
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -87,7 +95,6 @@ const ProductList = () => {
     }
   };
 
-
   useEffect(() => {
     fetchPosts();
   }, []);
@@ -109,8 +116,9 @@ const ProductList = () => {
           <TableHead>
             <TableRow>
               <TableCell>Title</TableCell>
+              <TableCell>Time</TableCell>
               <TableCell>Content</TableCell>
-              <TableCell>Image</TableCell> {/* Add a column for image */}
+              <TableCell>Image</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -118,10 +126,14 @@ const ProductList = () => {
             {posts.map((post) => (
               <TableRow key={post.id}>
                 <TableCell>{post.title}</TableCell>
+                <TableCell>
+                  {post.inTime && post.outTime
+                    ? `${formatTime(post.inTime)} - ${formatTime(post.outTime)}`
+                    : "Not Set"}
+                </TableCell>
                 <TableCell>{post.content}</TableCell>
                 <TableCell>
 
-                  {/* Display image if it exists */}
                   {post.fileData ? (
                     <img src={post.fileData.fileData} alt={post.title} style={{ width: 100, height: 100, objectFit: "cover" }} />
                   ) : (

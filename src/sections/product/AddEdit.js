@@ -1,13 +1,24 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { useForm } from "react-hook-form";
 import { TextField, Button, Paper } from "@mui/material";
 
 const ProductAddEdit = () => {
-  const [formData, setFormData] = useState({ title: "", content: "", uploads: [] });
-  const [loading, setLoading] = useState(false);
+  
+  const { register, handleSubmit, watch, formState: { errors } } = useForm();
   const router = useRouter();
   const params = useParams();
+  
+  const [formData, setFormData] = useState({
+    title: "",
+    content: "",
+    uploads: [],
+    inTime: "",
+    outTime: "",
+  });
+
+  const [loading, setLoading] = useState(false);
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
 
@@ -16,7 +27,13 @@ const ProductAddEdit = () => {
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/posts/${params.id}`);
         const product = await response.json();
-        setFormData({ title: product.title, content: product.content, uploads: product.uploads || [] });
+        setFormData({
+          title: product.title,
+          content: product.content,
+          uploads: product.uploads || [],
+          inTime: product.inTime || "",
+          outTime: product.outTime || "",
+        });
       } catch (error) {
         console.error("Error fetching product:", error);
       }
@@ -37,16 +54,16 @@ const ProductAddEdit = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     setLoading(true);
 
     try {
       const form = new FormData();
-      form.append("title", formData.title);
-      form.append("content", formData.content);
+      form.append("title", data.title);
+      form.append("content", data.content);
+      form.append("inTime", data.inTime);
+      form.append("outTime", data.outTime);
 
-      // Convert file to base64 format
       let fileData = null;
       if (file) {
         const reader = new FileReader();
@@ -54,7 +71,6 @@ const ProductAddEdit = () => {
         reader.onload = async () => {
           fileData = reader.result;
 
-          // Prepare payload to send to backend
           const payload = {
             fileName: file.name,
             fileType: file.type,
@@ -68,7 +84,7 @@ const ProductAddEdit = () => {
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                ...formData,
+                ...data,
                 fileData: payload,
               }),
             });
@@ -84,6 +100,21 @@ const ProductAddEdit = () => {
             alert("An error occurred. Please try again.");
           }
         };
+      } else {
+        const response = await fetch(`http://localhost:5000/posts/${params.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
+
+        if (response.ok) {
+          alert("Product updated successfully!");
+          router.push("/product");
+        } else {
+          alert("Failed to update the product.");
+        }
       }
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -96,26 +127,60 @@ const ProductAddEdit = () => {
   return (
     <Paper sx={{ padding: 4, margin: "auto", maxWidth: 600 }}>
       <h1>Edit Product</h1>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <TextField
           label="Title"
           variant="outlined"
           fullWidth
-          value={formData.title}
-          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          required
+          {...register("title", { required: "Title is required" })}
+          error={!!errors.title}
+          helperText={errors.title?.message}
           margin="normal"
         />
+
         <TextField
           label="Content"
           variant="outlined"
           fullWidth
           multiline
           rows={4}
-          value={formData.content}
-          onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-          required
+          {...register("content", { required: "Content is required" })}
+          error={!!errors.content}
+          helperText={errors.content?.message}
           margin="normal"
+        />
+
+        {/* In Time Field */}
+        <TextField
+          fullWidth
+          label="In Time"
+          type="time"
+          InputLabelProps={{ shrink: true }}
+          {...register("inTime", { required: "In Time is required" })}
+          error={!!errors.inTime}
+          helperText={errors.inTime?.message}
+          sx={{ mb: 2 }}
+        />
+
+        {/* Out Time Field */}
+        <TextField
+          fullWidth
+          label="Out Time"
+          type="time"
+          InputLabelProps={{ shrink: true }}
+          {...register("outTime", {
+            required: "Out Time is required",
+            validate: (value) => {
+              const inTime = watch("inTime"); // ✅ Watch inTime dynamically
+              if (inTime && value <= inTime) {
+                return "Out Time must be after In Time";
+              }
+              return true;
+            },
+          })}
+          error={!!errors.outTime}
+          helperText={errors.outTime?.message}
+          sx={{ mb: 2 }}
         />
 
         <input type="file" onChange={handleFileChange} accept="image/*,video/*" />
