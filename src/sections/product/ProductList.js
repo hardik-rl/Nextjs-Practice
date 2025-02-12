@@ -1,22 +1,9 @@
 "use client";
-import { useState, useEffect } from "react";
-import {
-  Button,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
-  Box,
-} from "@mui/material";
+import React, { useState, useEffect, useRef } from "react";
+import { Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Dialog, DialogActions, DialogContent, DialogTitle, Box } from "@mui/material";
 import { useRouter } from "next/navigation";
+import { useReactToPrint } from "react-to-print";
+import apiCall from "@/api/ApiCalling";
 
 const ProductList = () => {
   const formatTime = (time) => {
@@ -29,18 +16,24 @@ const ProductList = () => {
   };
 
   const [posts, setPosts] = useState([]);
-  const [formData, setFormData] = useState({ title: "", content: "" });
   const [deleteId, setDeleteId] = useState(null);
   const router = useRouter();
+  const componentRef = useRef();
 
   const fetchPosts = async () => {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/posts`);
-    const postsData = await response.json();
-    setPosts(postsData);
+    try {
+      const postsData = await apiCall('/posts');
+      setPosts(postsData);
+    } catch (error) {
+      console.error('Failed to fetch posts:', error);
+    }
   };
 
+  const handlePrint = useReactToPrint({
+    content: () => componentRef.current,
+  });
+
   const handleOpenModal = () => {
-    // setFormData({ title: "", content: "" });
     router.push("/product/new");
   };
 
@@ -50,9 +43,7 @@ const ProductList = () => {
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/posts/${deleteId}`,
-        {
-          method: "DELETE",
-        }
+        { method: "DELETE" }
       );
 
       if (!response.ok) {
@@ -72,17 +63,18 @@ const ProductList = () => {
 
   return (
     <div>
-      <Box display={"flex"} marginBottom={4} justifyContent="space-between" alignItems={"center"}>
+      <Box display="flex" marginBottom={4} justifyContent="space-between" alignItems="center">
         <h1>Product List</h1>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleOpenModal}
-        >
-          Add New Product
-        </Button>
+        <Box>
+          <Button variant="contained" color="primary" onClick={handleOpenModal} sx={{ marginRight: 2 }}>
+            Add New Product
+          </Button>
+          {/* <Button variant="contained" color="secondary" onClick={handlePrint}>
+            View PDF
+          </Button> */}
+        </Box>
       </Box>
-      <TableContainer component={Paper}>
+      <TableContainer component={Paper} ref={componentRef}>
         <Table>
           <TableHead>
             <TableRow>
@@ -104,7 +96,6 @@ const ProductList = () => {
                 </TableCell>
                 <TableCell>{post.content}</TableCell>
                 <TableCell>
-
                   {post.fileData ? (
                     <img src={post.fileData.fileData} alt={post.title} style={{ width: 100, height: 100, objectFit: "cover" }} />
                   ) : (
@@ -112,19 +103,10 @@ const ProductList = () => {
                   )}
                 </TableCell>
                 <TableCell>
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    onClick={() => router.push(`/product/${post.id}`)}
-                    sx={{ marginRight: 1 }}
-                  >
+                  <Button variant="outlined" color="primary" onClick={() => router.push(`/product/${post.id}`)} sx={{ marginRight: 1 }}>
                     Edit
                   </Button>
-                  <Button
-                    variant="outlined"
-                    color="secondary"
-                    onClick={() => setDeleteId(post.id)}
-                  >
+                  <Button variant="outlined" color="secondary" onClick={() => setDeleteId(post.id)}>
                     Delete
                   </Button>
                 </TableCell>

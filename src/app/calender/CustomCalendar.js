@@ -1,5 +1,3 @@
-
-
 import "react-datepicker/dist/react-datepicker.css";
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -88,7 +86,7 @@ export function CustomCalendar() {
                         fontSize: "16px",
                         backgroundColor: "#007BFF",
                         color: "#FFF",
-                        border: "none", 
+                        border: "none",
                         borderRadius: "5px",
                         cursor: "pointer",
                     }}
@@ -120,10 +118,10 @@ export function CustomCalendar() {
             >
                 <Box
                     sx={{
-                        // position: "absolute",
-                        // top: "50%",
-                        // left: "50%",
-                        // transform: "translate(-50%, -50%)",
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
                         width: 600,
                         maxHeight: 500,
                         overflowY: "auto",
@@ -132,7 +130,7 @@ export function CustomCalendar() {
                         // border: "2px solid #000",
                         // boxShadow: 24,
                         p: 4,
-                        // borderRadius: 2,
+                        borderRadius: 2,
                     }}
                 >
                     <Typography id="modal-title" variant="h6" component="h2">
