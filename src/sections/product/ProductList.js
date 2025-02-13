@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Dialog, DialogActions, DialogContent, DialogTitle, Box } from "@mui/material";
 import { useRouter } from "next/navigation";
-import { useReactToPrint } from "react-to-print";
 import apiCall from "@/api/ApiCalling";
 
 const ProductList = () => {
@@ -22,16 +21,12 @@ const ProductList = () => {
 
   const fetchPosts = async () => {
     try {
-      const postsData = await apiCall('/posts');
-      setPosts(postsData);
+      const response = await apiCall("/posts", "GET" );
+        setPosts(response);
     } catch (error) {
       console.error('Failed to fetch posts:', error);
     }
   };
-
-  const handlePrint = useReactToPrint({
-    content: () => componentRef.current,
-  });
 
   const handleOpenModal = () => {
     router.push("/product/new");
