@@ -21,4 +21,10 @@ export const menuData = [
       path: "/product",
       children: [],
   },
+  {
+    id: 3,
+    label: "Contact Us",
+    path: "/contact-us",
+    children: [],
+},
 ];
