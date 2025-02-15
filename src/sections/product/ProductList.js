@@ -1,8 +1,9 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Dialog, DialogActions, DialogContent, DialogTitle, Box } from "@mui/material";
+import { Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Dialog, DialogActions, DialogContent, DialogTitle, Box, IconButton } from "@mui/material";
 import { useRouter } from "next/navigation";
 import apiCall from "@/api/ApiCalling";
+import jsPDF from "jspdf";
 
 const ProductList = () => {
   const formatTime = (time) => {
@@ -21,8 +22,8 @@ const ProductList = () => {
 
   const fetchPosts = async () => {
     try {
-      const response = await apiCall("/posts", "GET" );
-        setPosts(response);
+      const response = await apiCall("/posts", "GET");
+      setPosts(response);
     } catch (error) {
       console.error('Failed to fetch posts:', error);
     }
@@ -46,15 +47,51 @@ const ProductList = () => {
       }
 
       setPosts((prevPosts) => prevPosts.filter((post) => post.id !== deleteId));
+      console.log("dddd");
+
       setDeleteId(null);
     } catch (error) {
       console.error("Error deleting post:", error);
     }
   };
 
+  const generatePDF = (post) => {
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text("Invoice", 14, 10);
+    const startX = 14;
+    const startY = 20;
+    const rowHeight = 10;
+    const colWidth = 80;
+
+    doc.setFontSize(12);
+    doc.line(startX, startY + 2, startX + 2 * colWidth, startY + 2);
+
+    const tableData = [
+      ["Title", post.title],
+      ["Content", post.content],
+      ["inTime", post.inTime],
+      ["outTime", post.outTime],
+    ];
+
+    let currentY = startY + rowHeight;
+
+    tableData.forEach(([key, value]) => {
+      doc.text(key, startX, currentY);
+      doc.text(value, startX + colWidth, currentY);
+      doc.line(startX, currentY + 2, startX + 2 * colWidth, currentY + 2);
+      currentY += rowHeight;
+    });
+
+    const pdfBlob = doc.output("blob");
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    window.open(pdfUrl, "_blank");
+  };
+
   useEffect(() => {
     fetchPosts();
   }, []);
+
 
   return (
     <div>
@@ -64,9 +101,6 @@ const ProductList = () => {
           <Button variant="contained" color="primary" onClick={handleOpenModal} sx={{ marginRight: 2 }}>
             Add New Product
           </Button>
-          {/* <Button variant="contained" color="secondary" onClick={handlePrint}>
-            View PDF
-          </Button> */}
         </Box>
       </Box>
       <TableContainer component={Paper} ref={componentRef}>
@@ -81,8 +115,8 @@ const ProductList = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {posts.map((post) => (
-              <TableRow key={post.id}>
+            {posts.map((post, index) => (
+              <TableRow key={post.id || `post-${index}`}>
                 <TableCell>{post.title}</TableCell>
                 <TableCell>
                   {post.inTime && post.outTime
@@ -101,8 +135,14 @@ const ProductList = () => {
                   <Button variant="outlined" color="primary" onClick={() => router.push(`/product/${post.id}`)} sx={{ marginRight: 1 }}>
                     Edit
                   </Button>
-                  <Button variant="outlined" color="secondary" onClick={() => setDeleteId(post.id)}>
+                  <Button variant="outlined" color="secondary" onClick={() => setDeleteId(post.id)} sx={{ marginRight: 1 }}>
                     Delete
+                  </Button>
+                  <Button
+                    variant="contained" color="info"
+                    onClick={() => generatePDF(post)}
+                  >
+                    View
                   </Button>
                 </TableCell>
               </TableRow>

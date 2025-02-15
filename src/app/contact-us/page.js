@@ -1,6 +1,6 @@
 "use client"
-import FormExample from "@/sections/contact-us/FormExample";
+import Inquiry from "@/sections/contact-us/Inquiry";
 
 export default function Page() {
-  return <FormExample />;
+  return <Inquiry />;
 }
